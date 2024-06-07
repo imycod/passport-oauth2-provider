@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app">
+      <input type="text" name="username" v-model="username" />
+      <input type="text" name="password" v-model="password" />
+      <button @click="login">login</button>
+    </div>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.3.7/vue.global.prod.min.js"></script>
+    <script type="module">
+      const { reactive, createApp, ref } = Vue;
+      const urlParams = new URLSearchParams(window.location.search);
+      const client_id = urlParams.get("client_id");
+      const response_type = urlParams.get("response_type") || 'code';
+      const redirect_uri = urlParams.get("redirect_uri");
+      const app = createApp({
+        setup() {
+          const username = ref("");
+          const password = ref("");
+
+          async function login() {
+            try {
+              const response = await fetch("/login", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  username: username.value,
+                  password: password.value,
+                  response_type,
+                  client_id,
+                  redirect_uri,
+                }),
+              });
+
+              console.log('response---',response);
+              console.log('response.status---',response.status);
+              if (response.status === 304) {
+                const redirectUrl = response.headers.get("Location");
+                if (redirectUrl) {
+                  window.location.href = redirectUrl;
+                } else {
+                  console.error("Redirect URL not found in response headers.");
+                }
+              } else {
+                const result = await response.json();
+                console.log(result);
+              }
+            } catch (error) {}
+          }
+
+          return {
+            username,
+            password,
+            login,
+          };
+        },
+      });
+      app.mount("#app");
+    </script>
+  </body>
+</html>

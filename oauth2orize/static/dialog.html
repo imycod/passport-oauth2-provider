@@ -1,0 +1,58 @@
+<!--
+ * @Author: wuxs 317009160@qq.com
+ * @Date: 2024-06-07 21:01:14
+ * @LastEditors: wuxs 317009160@qq.com
+ * @LastEditTime: 2024-06-07 23:47:50
+ * @FilePath: \passport-oauth2\oauth2orize\static\dialog.html
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app">
+      <button @click="decision(true)">Allow</button>
+      <button @click="decision(false)">Deny</button>
+    </div>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.3.7/vue.global.prod.min.js"></script>
+    <script type="module">
+      const urlParams = new URLSearchParams(window.location.search);
+      const transactionID = urlParams.get("transactionID");
+      const user = urlParams.get("user");
+      const client = urlParams.get("client");
+      const app = Vue.createApp({
+        data() {
+          async function decision(t) {
+            try {
+              const response = await fetch("/dialog/authorize/decision", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  transaction_id: transactionID,
+                  user,
+                  client,
+                  allow: t ? "allow" : "deny",
+                }),
+              });
+              if (response.status === 200) {
+                window.location.href = response.url;
+              } 
+            } catch (error) {
+              console.log('error---',error);
+            }
+          }
+          return {
+            decision,
+          };
+        },
+      });
+      app.mount("#app");
+    </script>
+  </body>
+</html>
